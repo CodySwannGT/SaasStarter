@@ -1,0 +1,31 @@
+{
+  "extends": "@saas-starter/tsconfig/react-native.json",
+  "include": [
+    "nativewind-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "tailwind.config.js"
+  ],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "baseUrl": "./",
+    "moduleSuffixes": [".ios", ".android", ".native", ".web", ""],
+    "paths": {
+      "@/app/*": ["app/*"],
+      "@/types/*": ["types/*"],
+      "@/assets/*": ["assets/*"],
+      "@/config/*": ["config/*"],
+      "@/stores/*": ["stores/*"],
+      "@/features/*": ["features/*"],
+      "@/providers/*": ["providers/*"],
+      "@/utils/*": ["utils/*"],
+      "@/hooks/*": ["hooks/*"],
+      "@/generated/*": ["generated/*"],
+      "@/components/*": ["components/*"],
+      "@/graphql/*": ["graphql-generated/*"]
+    }
+  }
+}

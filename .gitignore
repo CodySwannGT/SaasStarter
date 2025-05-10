@@ -1,0 +1,136 @@
+# dependencies
+node_modules
+.pnp
+.pnp.js
+
+# testing
+coverage
+
+# next.js
+.next/
+out/
+build
+dist
+
+# expo
+.expo/
+web-build/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+.idea
+.vscode
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# local env files
+.env*.local
+.env
+.env.development
+.env.test
+.env.production
+
+# turbo
+.turbo
+
+# typescript
+*.tsbuildinfo
+
+# logs
+*.log
+EOL < /dev/null
+**/.claude/settings.local.json
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+
+# Native
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.ipa
+*.apk
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+google-service-account.json
+google-service*
+
+.sentry/
+**/.claude/settings.local.json
+
+# onboarding marker
+onboarded
+
+.mcp.json
+
+# Added by Claude Task Master
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+dev-debug.log
+# Dependency directories
+# Environment variables
+.env
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+# OS specific
+# Task files
+tasks.json
+tasks/ 
+.roo
+.roomodes
+.taskmasterconfig
+.windsurfrules
+.cursor
+.eslintcache
+# MCP and Taskmaster
+.mcp.json
+.cursor/
+.roo/
+.roomodes
+.taskmasterconfig
+.windsurfrules
+tasks/
+.mcp.json

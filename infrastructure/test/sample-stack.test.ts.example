@@ -1,0 +1,96 @@
+import { App } from 'aws-cdk-lib';
+import { Template } from 'aws-cdk-lib/assertions';
+// Import the stack class you're testing
+// import { SampleStack } from '../lib/sample-stack';
+
+/**
+ * Sample test file showing how to test CDK infrastructure
+ * 
+ * This serves as a template to help with creating more tests.
+ * Replace with actual implementation when adding real tests.
+ */
+describe('Sample Stack Tests', () => {
+  test('Sample Test - Stack Creates S3 Bucket', () => {
+    // ARRANGE
+    const app = new App();
+    
+    // Uncomment and replace with actual stack being tested
+    // const stack = new SampleStack(app, 'MyTestStack');
+
+    // ACT - Get the CloudFormation template
+    // const template = Template.fromStack(stack);
+
+    // Placeholder assertion for demonstration - remove and use actual code
+    expect(true).toBe(true);
+    
+    // ASSERT - Example assertions that would typically be used
+    // template.resourceCountIs('AWS::S3::Bucket', 1);
+    
+    // Example: Check that a bucket has versioning enabled
+    // template.hasResourceProperties('AWS::S3::Bucket', {
+    //   VersioningConfiguration: {
+    //     Status: 'Enabled'
+    //   }
+    // });
+    
+    // Example: Check for specific outputs
+    // template.hasOutput('BucketNameOutput', {
+    //   Value: {
+    //     Ref: 'MyBucketResourceId'
+    //   }
+    // });
+  });
+  
+  // Additional test examples
+  
+  // Test for IAM policy compliance
+  test('Sample Test - IAM Role Has Expected Policies', () => {
+    // ARRANGE
+    // const app = new App();
+    // const stack = new SampleStack(app, 'MyTestStack');
+    
+    // ACT
+    // const template = Template.fromStack(stack);
+    
+    // ASSERT
+    // Check IAM role exists
+    // template.resourceCountIs('AWS::IAM::Role', 1);
+    
+    // Check role has expected policy
+    // template.hasResourceProperties('AWS::IAM::Role', {
+    //   ManagedPolicyArns: [
+    //     { 'Fn::Join': ['', ['arn:', { Ref: 'AWS::Partition' }, ':iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy']] }
+    //   ]
+    // });
+    
+    // Placeholder assertion - remove when implementing real tests
+    expect(true).toBe(true);
+  });
+  
+  // Test for security configurations
+  test('Sample Test - Security Group Has Expected Rules', () => {
+    // ARRANGE
+    // const app = new App();
+    // const stack = new SampleStack(app, 'MyTestStack');
+    
+    // ACT
+    // const template = Template.fromStack(stack);
+    
+    // ASSERT
+    // Check security group exists
+    // template.resourceCountIs('AWS::EC2::SecurityGroup', 1);
+    
+    // Check security group has expected ingress rules
+    // template.hasResourceProperties('AWS::EC2::SecurityGroup', {
+    //   SecurityGroupIngress: [{
+    //     CidrIp: '0.0.0.0/0',
+    //     FromPort: 443,
+    //     IpProtocol: 'tcp',
+    //     ToPort: 443
+    //   }]
+    // });
+    
+    // Placeholder assertion - remove when implementing real tests
+    expect(true).toBe(true);
+  });
+});

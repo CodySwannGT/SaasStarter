@@ -1,0 +1,508 @@
+{
+  "/Users/cody/workspace/micro-saas-starter/apps/backend/serverless.yml": {
+    "versionFramework": "4.14.3",
+    "servicePath": "/Users/cody/workspace/micro-saas-starter/apps/backend/serverless.yml",
+    "serviceConfigFileName": "serverless.yml",
+    "service": {
+      "service": "backend",
+      "frameworkVersion": "^4.0.0",
+      "custom": {
+        "serviceName": "${self:service}",
+        "prune": {
+          "number": 4
+        },
+        "exportPrefix": "${self:custom.serviceName}-${sls:stage}-",
+        "export-env": {
+          "filename": ".env.local",
+          "overwrite": false,
+          "enableOffline": true
+        },
+        "warmup": {
+          "default": {
+            "prewarm": true,
+            "events": [
+              {
+                "schedule": "rate(3 minutes)"
+              }
+            ]
+          }
+        },
+        "scriptable": {
+          "hooks": {
+            "before:package:createDeploymentArtifacts": "mv .warmup/default/index.mjs .warmup/default/index.js"
+          }
+        },
+        "databaseName": {
+          "Fn::ImportValue": "auroraDatabaseName"
+        },
+        "databaseHostname": {
+          "Fn::ImportValue": "auroraClusterHostname"
+        },
+        "databaseProxyEndpoint": {
+          "Fn::ImportValue": "auroraProxyEndpoint"
+        },
+        "databasePort": {
+          "Fn::ImportValue": "auroraClusterPort"
+        },
+        "databaseUser": {
+          "Fn::ImportValue": "auroraUser"
+        },
+        "databaseProxyEndpointReadOnly": {
+          "Fn::ImportValue": "auroraProxyEndpointReadOnly"
+        },
+        "databaseSecretName": "<REDACTED>",
+        "cognitoClientId": {
+          "Fn::ImportValue": "CognitoClientId"
+        },
+        "cognitoUserPoolArn": {
+          "Fn::ImportValue": "UserPoolArn"
+        },
+        "cognitoUserPoolId": {
+          "Fn::ImportValue": "UserPoolId"
+        },
+        "cognitoUserPoolName": {
+          "Fn::ImportValue": "UserPoolName"
+        },
+        "snsTopicNameImport": {
+          "Fn::ImportValue": "SmsSnsTopicName"
+        }
+      },
+      "plugins": [
+        "serverless-plugin-warmup",
+        "serverless-plugin-common-excludes",
+        "serverless-offline",
+        "serverless-prune-plugin",
+        "serverless-export-env"
+      ],
+      "provider": {
+        "name": "aws",
+        "runtime": "nodejs20.x",
+        "region": "us-east-1",
+        "tracing": {
+          "lambda": true,
+          "apiGateway": true
+        },
+        "httpApi": {
+          "cors": true
+        },
+        "environment": {
+          "OPENAI_API_KEY": "<REDACTED>",
+          "DATABASE_HOST": "${env:DATABASE_HOST, self:custom.databaseHostname, param:DATABASE_HOST, \"\"}",
+          "DATABASE_PROXY_HOST": "${env:DATABASE_PROXY_HOST, self:custom.databaseProxyEndpoint, param:DATABASE_PROXY_HOST, \"\"}",
+          "DATABASE_PROXY_HOST_READ_1": "${env:DATABASE_PROXY_HOST_READ_1, self:custom.databaseProxyEndpointReadOnly, param:DATABASE_PROXY_HOST_READ_1, \"\"}",
+          "DATABASE_PORT": "${env:DATABASE_PORT, self:custom.databasePort, param:DATABASE_PORT, \"\"}",
+          "DATABASE_USERNAME": "${env:DATABASE_USERNAME, self:custom.databaseUser, param:DATABASE_USERNAME, \"\"}",
+          "DATABASE_USERNAME_READ_1": "${env:DATABASE_USERNAME_READ_1, self:custom.databaseUser, param:DATABASE_USERNAME_READ_1, \"\"}",
+          "DATABASE_PASSWORD": "<REDACTED>",
+          "DATABASE_NAME": "${env:DATABASE_NAME, self:custom.databaseName, param:DATABASE_NAME, \"\"}",
+          "COGNITO_USER_POOL_ID": {
+            "Fn::ImportValue": "UserPoolId"
+          },
+          "COGNITO_APP_CLIENT_ID": {
+            "Fn::ImportValue": "CognitoClientId"
+          },
+          "STAGE": "${sls:stage}",
+          "REDIS_PORT": {
+            "Fn::ImportValue": "redisCachePort"
+          },
+          "REDIS_HOST": null,
+          "APIG_ENDPOINT": {
+            "Fn::Join": [
+              "",
+              [
+                "https://",
+                {
+                  "Ref": "WebsocketsApi"
+                },
+                ".execute-api.",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ".amazonaws.com/",
+                "${sls:stage}"
+              ]
+            ]
+          }
+        },
+        "vpc": {
+          "securityGroupIds": {
+            "Fn::Split": [
+              ",",
+              {
+                "Fn::ImportValue": "lambdaSecurityGroupIds"
+              }
+            ]
+          },
+          "subnetIds": {
+            "Fn::Split": [
+              ",",
+              {
+                "Fn::ImportValue": "vpcPrivateSubnets"
+              }
+            ]
+          }
+        },
+        "iam": {
+          "role": {
+            "statements": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "appconfigdata:StartConfigurationSession",
+                  "appconfigdata:GetLatestConfiguration",
+                  "appconfig:GetLatestConfiguration",
+                  "appconfig:StartConfigurationSession"
+                ],
+                "Resource": [
+                  "*"
+                ]
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "xray:PutTraceSegments",
+                  "xray:PutTelemetryRecords"
+                ],
+                "Resource": [
+                  "*"
+                ]
+              },
+              {
+                "Effect": "Allow",
+                "Action": "secretsmanager:GetSecretValue",
+                "Resource": "*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": "rds-db:connect",
+                "Resource": "*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "sqs:sendmessage",
+                  "sqs:receivemessage",
+                  "sqs:deletemessage",
+                  "sqs:getqueueurl",
+                  "sqs:changeMessageVisibility",
+                  "sqs:getQueueAttributes"
+                ],
+                "Resource": "*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "s3:GetObject",
+                  "s3:ListBucket",
+                  "s3:PutObject",
+                  "s3:DeleteObject"
+                ],
+                "Resource": "*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "ses:SendEmail"
+                ],
+                "Resource": "*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "execute-api:*"
+                ],
+                "Resource": "*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "sns:publish",
+                  "sns:subscribe",
+                  "sns:unsubscribe"
+                ],
+                "Resource": "*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "sms-voice:*"
+                ],
+                "Resource": "*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "sts:AssumeRole"
+                ],
+                "Resource": "*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "cognito-idp:AdminAddUserToGroup",
+                  "cognito-idp:AdminCreateUser",
+                  "cognito-idp:AdminDisableUserCommand",
+                  "cognito-idp:AdminDeleteUser",
+                  "cognito-idp:AdminDisableUser",
+                  "cognito-idp:AdminEnableUser",
+                  "cognito-idp:AdminGetUser",
+                  "cognito-idp:AdminInitiateAuth",
+                  "cognito-idp:AdminListGroupsForUser",
+                  "cognito-idp:AdminRemoveUserFromGroup",
+                  "cognito-idp:AdminResetUserPassword",
+                  "cognito-idp:AdminSetUserPassword",
+                  "cognito-idp:AdminUpdateUserAttributes",
+                  "cognito-idp:ChangePassword",
+                  "cognito-idp:ConfirmForgotPassword",
+                  "cognito-idp:GlobalSignOut",
+                  "cognito-idp:ListUsers",
+                  "cognito-idp:ListUserPools",
+                  "cognito-idp:ListUsersInGroup",
+                  "cognito-idp:RespondToAuthChallenge",
+                  "cognito-idp:RevokeToken",
+                  "cognito-idp:UpdateUserAttributes"
+                ],
+                "Resource": "*"
+              }
+            ]
+          }
+        }
+      },
+      "package": {
+        "patterns": [
+          "src/**"
+        ]
+      },
+      "functions": {
+        "fmain": {
+          "handler": "src/main.handler",
+          "url": true
+        },
+        "main": {
+          "provisionedConcurrency": 1,
+          "handler": "src/main.handler",
+          "timeout": 29,
+          "events": [
+            {
+              "httpApi": {
+                "method": "any",
+                "path": "/{proxy+}"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "nodejs20.x",
+      "region": "us-east-1",
+      "tracing": {
+        "lambda": true,
+        "apiGateway": true
+      },
+      "httpApi": {
+        "cors": true
+      },
+      "environment": {
+        "OPENAI_API_KEY": "<REDACTED>",
+        "DATABASE_HOST": "${env:DATABASE_HOST, self:custom.databaseHostname, param:DATABASE_HOST, \"\"}",
+        "DATABASE_PROXY_HOST": "${env:DATABASE_PROXY_HOST, self:custom.databaseProxyEndpoint, param:DATABASE_PROXY_HOST, \"\"}",
+        "DATABASE_PROXY_HOST_READ_1": "${env:DATABASE_PROXY_HOST_READ_1, self:custom.databaseProxyEndpointReadOnly, param:DATABASE_PROXY_HOST_READ_1, \"\"}",
+        "DATABASE_PORT": "${env:DATABASE_PORT, self:custom.databasePort, param:DATABASE_PORT, \"\"}",
+        "DATABASE_USERNAME": "${env:DATABASE_USERNAME, self:custom.databaseUser, param:DATABASE_USERNAME, \"\"}",
+        "DATABASE_USERNAME_READ_1": "${env:DATABASE_USERNAME_READ_1, self:custom.databaseUser, param:DATABASE_USERNAME_READ_1, \"\"}",
+        "DATABASE_PASSWORD": "<REDACTED>",
+        "DATABASE_NAME": "${env:DATABASE_NAME, self:custom.databaseName, param:DATABASE_NAME, \"\"}",
+        "COGNITO_USER_POOL_ID": {
+          "Fn::ImportValue": "UserPoolId"
+        },
+        "COGNITO_APP_CLIENT_ID": {
+          "Fn::ImportValue": "CognitoClientId"
+        },
+        "STAGE": "${sls:stage}",
+        "REDIS_PORT": {
+          "Fn::ImportValue": "redisCachePort"
+        },
+        "REDIS_HOST": null,
+        "APIG_ENDPOINT": {
+          "Fn::Join": [
+            "",
+            [
+              "https://",
+              {
+                "Ref": "WebsocketsApi"
+              },
+              ".execute-api.",
+              {
+                "Ref": "AWS::Region"
+              },
+              ".amazonaws.com/",
+              "${sls:stage}"
+            ]
+          ]
+        }
+      },
+      "vpc": {
+        "securityGroupIds": {
+          "Fn::Split": [
+            ",",
+            {
+              "Fn::ImportValue": "lambdaSecurityGroupIds"
+            }
+          ]
+        },
+        "subnetIds": {
+          "Fn::Split": [
+            ",",
+            {
+              "Fn::ImportValue": "vpcPrivateSubnets"
+            }
+          ]
+        }
+      },
+      "iam": {
+        "role": {
+          "statements": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "appconfigdata:StartConfigurationSession",
+                "appconfigdata:GetLatestConfiguration",
+                "appconfig:GetLatestConfiguration",
+                "appconfig:StartConfigurationSession"
+              ],
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "xray:PutTraceSegments",
+                "xray:PutTelemetryRecords"
+              ],
+              "Resource": [
+                "*"
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": "secretsmanager:GetSecretValue",
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": "rds-db:connect",
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "sqs:sendmessage",
+                "sqs:receivemessage",
+                "sqs:deletemessage",
+                "sqs:getqueueurl",
+                "sqs:changeMessageVisibility",
+                "sqs:getQueueAttributes"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:DeleteObject"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "ses:SendEmail"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "execute-api:*"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "sns:publish",
+                "sns:subscribe",
+                "sns:unsubscribe"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "sms-voice:*"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "sts:AssumeRole"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "cognito-idp:AdminAddUserToGroup",
+                "cognito-idp:AdminCreateUser",
+                "cognito-idp:AdminDisableUserCommand",
+                "cognito-idp:AdminDeleteUser",
+                "cognito-idp:AdminDisableUser",
+                "cognito-idp:AdminEnableUser",
+                "cognito-idp:AdminGetUser",
+                "cognito-idp:AdminInitiateAuth",
+                "cognito-idp:AdminListGroupsForUser",
+                "cognito-idp:AdminRemoveUserFromGroup",
+                "cognito-idp:AdminResetUserPassword",
+                "cognito-idp:AdminSetUserPassword",
+                "cognito-idp:AdminUpdateUserAttributes",
+                "cognito-idp:ChangePassword",
+                "cognito-idp:ConfirmForgotPassword",
+                "cognito-idp:GlobalSignOut",
+                "cognito-idp:ListUsers",
+                "cognito-idp:ListUserPools",
+                "cognito-idp:ListUsersInGroup",
+                "cognito-idp:RespondToAuthChallenge",
+                "cognito-idp:RevokeToken",
+                "cognito-idp:UpdateUserAttributes"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      }
+    },
+    "error": {
+      "message": "You have not registered a user account. - Please contact support and provide this identifier to reference this issue - H111R9TVQ5PM",
+      "stack": "Error: You have not registered a user account. - Please contact support and provide this identifier to reference this issue - H111R9TVQ5PM\n    at _OrgsClient.makeRequest (file:///Users/cody/.serverless/releases/4.14.3/package/dist/sf-core.js:341:3132)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async _OrgsClient._get (file:///Users/cody/.serverless/releases/4.14.3/package/dist/sf-core.js:341:1988)\n    at async Authentication.getAuthenticatedData (file:///Users/cody/.serverless/releases/4.14.3/package/dist/sf-core.js:694:2239)\n    at async Authentication.authenticate (file:///Users/cody/.serverless/releases/4.14.3/package/dist/sf-core.js:694:21808)\n    at async TraditionalRunner.resolveVariablesAndAuthenticate (file:///Users/cody/.serverless/releases/4.14.3/package/dist/sf-core.js:698:2377)\n    at async TraditionalRunner.run (file:///Users/cody/.serverless/releases/4.14.3/package/dist/sf-core.js:1271:27896)\n    at async route (file:///Users/cody/.serverless/releases/4.14.3/package/dist/sf-core.js:1302:2779)\n    at async Object.run (file:///Users/cody/.serverless/releases/4.14.3/package/dist/sf-core.js:1303:3661)\n    at async run2 (file:///Users/cody/.serverless/releases/4.14.3/package/dist/sf-core.js:1303:4815)"
+    },
+    "serviceRawFile": "service: backend\nframeworkVersion: \"^4.0.0\"\n\ncustom:\n  serviceName: ${self:service}\n  prune:\n    number: 4\n  exportPrefix: \"${self:custom.serviceName}-${sls:stage}-\"\n  export-env:\n    filename: .env.local\n    overwrite: false\n    enableOffline: true\n    \n  warmup:\n    default:\n      prewarm: true\n      events:\n        - schedule: rate(3 minutes)\n\n  scriptable:\n    hooks:\n      before:package:createDeploymentArtifacts: mv .warmup/default/index.mjs .warmup/default/index.js\n  databaseName:\n    Fn::ImportValue: auroraDatabaseName\n  databaseHostname:\n    Fn::ImportValue: auroraClusterHostname\n  databaseProxyEndpoint:\n    Fn::ImportValue: auroraProxyEndpoint\n  databasePort:\n    Fn::ImportValue: auroraClusterPort\n  databaseUser:\n    Fn::ImportValue: auroraUser\n  databaseProxyEndpointReadOnly:\n    Fn::ImportValue: auroraProxyEndpointReadOnly\n  databaseSecretName:\n    Fn::ImportValue: auroraClusterSecretName\n  cognitoClientId:\n    Fn::ImportValue: CognitoClientId\n  cognitoUserPoolArn:\n    Fn::ImportValue: UserPoolArn\n  cognitoUserPoolId:\n    Fn::ImportValue: UserPoolId\n  cognitoUserPoolName:\n    Fn::ImportValue: UserPoolName \n  snsTopicNameImport: \n    Fn::ImportValue: SmsSnsTopicName\n  \n\nplugins:\n  - serverless-plugin-warmup\n  - serverless-plugin-common-excludes\n  - serverless-offline\n  - serverless-prune-plugin\n  - serverless-export-env\n\nprovider:\n  name: aws\n  runtime: nodejs20.x\n  region: us-east-1\n  # profile: \"gemini-${sls:stage}-v2\"\n  tracing:\n    lambda: true\n    apiGateway: true\n  httpApi:\n    cors: true\n  environment:\n    OPENAI_API_KEY: ${env:OPENAI_API_KEY, ssm:/openai/api_key, param:OPENAI_API_KEY, \"\"}\n    DATABASE_HOST: ${env:DATABASE_HOST, self:custom.databaseHostname, param:DATABASE_HOST, \"\"}\n    DATABASE_PROXY_HOST: ${env:DATABASE_PROXY_HOST, self:custom.databaseProxyEndpoint, param:DATABASE_PROXY_HOST, \"\"}\n    DATABASE_PROXY_HOST_READ_1: ${env:DATABASE_PROXY_HOST_READ_1, self:custom.databaseProxyEndpointReadOnly, param:DATABASE_PROXY_HOST_READ_1, \"\"}\n    DATABASE_PORT: ${env:DATABASE_PORT, self:custom.databasePort, param:DATABASE_PORT, \"\"}\n    DATABASE_USERNAME: ${env:DATABASE_USERNAME, self:custom.databaseUser, param:DATABASE_USERNAME, \"\"}\n    DATABASE_USERNAME_READ_1: ${env:DATABASE_USERNAME_READ_1, self:custom.databaseUser, param:DATABASE_USERNAME_READ_1, \"\"}\n    DATABASE_PASSWORD: ${env:DATABASE_PASSWORD, self:custom.databasePassword, param:DATABASE_PASSWORD, \"\"}\n    DATABASE_NAME: ${env:DATABASE_NAME, self:custom.databaseName, param:DATABASE_NAME, \"\"}\n    COGNITO_USER_POOL_ID:\n      Fn::ImportValue: UserPoolId\n    COGNITO_APP_CLIENT_ID:\n      Fn::ImportValue: CognitoClientId\n    STAGE: ${sls:stage}\n    REDIS_PORT:\n      Fn::ImportValue: redisCachePort\n    REDIS_HOST:\n    APIG_ENDPOINT:\n      Fn::Join:\n        - \"\"\n        - - https://\n          - Ref: WebsocketsApi\n          - .execute-api.\n          - Ref: AWS::Region\n          - .amazonaws.com/\n          - ${sls:stage}\n          \n  vpc:\n    securityGroupIds: !Split [\",\", !ImportValue lambdaSecurityGroupIds]\n    subnetIds: !Split [\",\", !ImportValue vpcPrivateSubnets]\n  iam:\n    role:\n      statements:\n        - Effect: Allow\n          Action:\n            - appconfigdata:StartConfigurationSession\n            - appconfigdata:GetLatestConfiguration\n            - appconfig:GetLatestConfiguration\n            - appconfig:StartConfigurationSession\n          Resource:\n            - \"*\"\n        - Effect: \"Allow\" # xray permissions (required)\n          Action:\n            - \"xray:PutTraceSegments\"\n            - \"xray:PutTelemetryRecords\"\n          Resource:\n            - \"*\"\n        - Effect: Allow\n          Action: \"secretsmanager:GetSecretValue\"\n          Resource: \"*\"\n        - Effect: Allow\n          Action: \"rds-db:connect\"\n          Resource: \"*\"\n        - Effect: Allow\n          Action:\n            - sqs:sendmessage\n            - sqs:receivemessage\n            - sqs:deletemessage\n            - sqs:getqueueurl\n            - sqs:changeMessageVisibility\n            - sqs:getQueueAttributes\n          Resource: \"*\"\n        - Effect: Allow\n          Action:\n            - \"s3:GetObject\"\n            - \"s3:ListBucket\"\n            - \"s3:PutObject\"\n            - \"s3:DeleteObject\"\n          Resource: \"*\"\n        - Effect: Allow\n          Action:\n            - ses:SendEmail\n          Resource: \"*\"\n        - Effect: Allow\n          Action:\n            - execute-api:*\n          Resource: \"*\"\n        - Effect: Allow\n          Action:\n            - sns:publish\n            - sns:subscribe\n            - sns:unsubscribe\n          Resource: \"*\"\n        - Effect: Allow\n          Action:\n            - sms-voice:*\n          Resource: \"*\"\n        - Effect: Allow\n          Action:\n            - sts:AssumeRole\n          Resource: \"*\"\n        - Effect: Allow\n          Action:\n            - cognito-idp:AdminAddUserToGroup\n            - cognito-idp:AdminCreateUser\n            - cognito-idp:AdminDisableUserCommand\n            - cognito-idp:AdminDeleteUser\n            - cognito-idp:AdminDisableUser\n            - cognito-idp:AdminEnableUser\n            - cognito-idp:AdminGetUser\n            - cognito-idp:AdminInitiateAuth\n            - cognito-idp:AdminListGroupsForUser\n            - cognito-idp:AdminRemoveUserFromGroup\n            - cognito-idp:AdminResetUserPassword\n            - cognito-idp:AdminSetUserPassword\n            - cognito-idp:AdminUpdateUserAttributes\n            - cognito-idp:ChangePassword\n            - cognito-idp:ConfirmForgotPassword\n            - cognito-idp:GlobalSignOut\n            - cognito-idp:ListUsers\n            - cognito-idp:ListUserPools\n            - cognito-idp:ListUsersInGroup\n            - cognito-idp:RespondToAuthChallenge\n            - cognito-idp:RevokeToken\n            - cognito-idp:UpdateUserAttributes\n          Resource: \"*\"\n\npackage:\n  patterns:\n    - \"src/**\"\n\nfunctions:\n  fmain:\n    handler: src/main.handler\n    url: true\n\n  main:\n    provisionedConcurrency: 1\n    handler: src/main.handler\n    timeout: 29\n    events:\n      - httpApi:\n          method: any\n          path: /{proxy+}\n\n  \n  ",
+    "command": [
+      "offline",
+      "start"
+    ],
+    "options": {
+      "noTimeout": true
+    },
+    "serviceProviderAwsCfStackId": null,
+    "serviceProviderAwsCfStackCreated": null,
+    "serviceProviderAwsCfStackUpdated": null,
+    "serviceProviderAwsCfStackStatus": null,
+    "serviceProviderAwsCfStackOutputs": null
+  }
+}

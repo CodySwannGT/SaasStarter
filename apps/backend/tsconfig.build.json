@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src/**/*",
+    "src/**/*.graphql"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts",
+    "node_modules/snowflake-sdk"
+  ]
+}

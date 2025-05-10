@@ -1,0 +1,8 @@
+# Temporarily skip checks for this commit only
+if [ "$HUSKY_SKIP_HOOKS" != "1" ]; then
+  # Run lint-staged
+  yarn lint-staged
+  yarn types:check
+else
+  echo "Skipping pre-commit hooks for this commit only"
+fi

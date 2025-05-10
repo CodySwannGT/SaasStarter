@@ -1,0 +1,7 @@
+build
+node_modules
+.github
+graphql
+generated
+public
+components/ui/

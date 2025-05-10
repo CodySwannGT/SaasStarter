@@ -1,0 +1,67 @@
+services:
+  # NestJS Application 
+  app:
+    build: .
+    container_name: app
+    restart: always
+    volumes:
+      - .:/app
+      # Don't mount node_modules
+      - /app/node_modules
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - NODE_ENV=development
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_USERNAME=postgres
+      - DATABASE_PASSWORD=password
+      - DATABASE_NAME=main
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: main
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # Redis Service
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # Nginx Proxy
+  # nginx:
+  #   build:
+  #     context: ./
+  #     dockerfile: nginx.Dockerfile
+  #   image: nginx:latest
+  #   container_name: nginx
+  #   restart: always
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - BACKEND_ADDRESS=app:4000
+  #   depends_on:
+  #     - app
+
+volumes:
+  postgres_data:
+  redis_data:

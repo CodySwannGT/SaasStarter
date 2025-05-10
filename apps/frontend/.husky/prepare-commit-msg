@@ -1,0 +1,41 @@
+#!/bin/bash
+branches_list() {
+    git branch
+}
+checked_out_branch() {
+    sed -e '/^[^*]/d'
+}
+get_jira_ticket() {
+    grep -e 'SE\+-[0-9]\+' -o || true
+}
+get_ticket_from_branch_name() {
+    branches_list | checked_out_branch | get_jira_ticket
+}
+get_everything_after_pound() {
+    branches_list | checked_out_branch | get_jira_ticket
+}
+MESSAGE="$(cat $1)"
+
+# Skip ticket checking for release commits
+if [ -n "$(echo "$MESSAGE" | grep "chore(release)")" ] && [ -n "$(echo "$MESSAGE" | grep "\[skip ci\]")" ]; then
+  exit 0
+fi
+
+# Check if message contains a # character
+if [ -n "$(echo "$MESSAGE" | grep "#")" ]; then
+  EVERYTHING_AFTER_POUND="$(echo "$MESSAGE" | sed 's/.*#//' | sed 's/\//\\\//'g)"
+  MESSAGE_WITHOUT_POUND="$(echo "$MESSAGE" | sed "s/#${EVERYTHING_AFTER_POUND}//g")"
+else
+  EVERYTHING_AFTER_POUND=""
+  MESSAGE_WITHOUT_POUND="$MESSAGE"
+fi
+
+TICKET=`get_ticket_from_branch_name`
+
+if [ "$TICKET" ]; then
+  if [ -n "$EVERYTHING_AFTER_POUND" ]; then
+    echo "$MESSAGE_WITHOUT_POUND [$TICKET] #$EVERYTHING_AFTER_POUND" > $1
+  else
+    echo "$MESSAGE [$TICKET]" > $1
+  fi
+fi

@@ -1,0 +1,19 @@
+{
+  "extends": "@saas-starter/tsconfig/node.json",
+  "compilerOptions": {
+    "removeComments": true,
+    "baseUrl": "./",
+    "outDir": "./dist",
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

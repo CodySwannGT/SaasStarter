@@ -1,0 +1,117 @@
+{
+  "cli": {
+    "version": ">= 7.2.0"
+  },
+  "build": {
+    "base": {
+      "resourceClass": "large"
+    },
+    "dev-base": {
+      "extends": "base",
+      "channel": "dev",
+      "env": {
+        "STAGE": "dev",
+        "PUPPETEER_SKIP_DOWNLOAD": "true",
+        "NODE_OPTIONS": "--max-old-space-size=4096",
+        "EXPO_PUBLIC_GRAPHQL_BASE_URL": "https://smuuj02lv7.execute-api.us-east-1.amazonaws.com/graphql",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://a87c560830d5eb8f82b7628866d1658d@o4504843993546752.ingest.us.sentry.io/4507732503560192",
+        "EXPO_PUBLIC_APIG_ENDPOINT": "wss://ob19rq5wyd.execute-api.us-east-1.amazonaws.com/dev/"
+      }
+    },
+    "dev": {
+      "extends": "dev-base",
+      "developmentClient": true,
+      "distribution": "internal",
+      "channel": "dev"
+    },
+    "dev-simulator": {
+      "extends": "dev-base",
+      "ios": {
+        "simulator": true
+      }
+    },
+    "dev-preview": {
+      "extends": "dev-base",
+      "developmentClient": false,
+      "distribution": "internal"
+    },
+    "staging": {
+      "extends": "base",
+      "channel": "staging",
+      "env": {
+        "STAGE": "staging",
+        "PUPPETEER_SKIP_DOWNLOAD": "true",
+        "NODE_OPTIONS": "--max-old-space-size=4096",
+        "EXPO_PUBLIC_GRAPHQL_BASE_URL": "https://eojlfn3czf.execute-api.us-east-1.amazonaws.com/graphql",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://a87c560830d5eb8f82b7628866d1658d@o4504843993546752.ingest.us.sentry.io/4507732503560192",
+        "EXPO_PUBLIC_APIG_ENDPOINT": "wss://b4qlww9bgg.execute-api.us-east-1.amazonaws.com/staging/"
+      }
+    },
+    "production-preview": {
+      "extends": "base",
+      "channel": "production",
+      "developmentClient": false,
+      "distribution": "internal",
+      "env": {
+        "STAGE": "production",
+        "PUPPETEER_SKIP_DOWNLOAD": "true",
+        "NODE_OPTIONS": "--max-old-space-size=4096",
+        "EXPO_PUBLIC_GRAPHQL_BASE_URL": "https://jqvleomk6d.execute-api.us-east-1.amazonaws.com/graphql",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://a87c560830d5eb8f82b7628866d1658d@o4504843993546752.ingest.us.sentry.io/4507732503560192"
+      }
+    },
+    "production": {
+      "extends": "base",
+      "channel": "production",
+      "env": {
+        "STAGE": "production",
+        "PUPPETEER_SKIP_DOWNLOAD": "true",
+        "NODE_OPTIONS": "--max-old-space-size=4096",
+        "EXPO_PUBLIC_GRAPHQL_BASE_URL": "https://jqvleomk6d.execute-api.us-east-1.amazonaws.com/graphql",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://a87c560830d5eb8f82b7628866d1658d@o4504843993546752.ingest.us.sentry.io/4507732503560192"
+      }
+    }
+  },
+  "submit": {
+    "base": {
+      "android": {},
+      "ios": {
+        "companyName": "Gemini Sports"
+      }
+    },
+    "dev": {
+      "extends": "base",
+      "ios": {},
+      "android": {
+        "track": "internal"
+      }
+    },
+    "dev-preview": {
+      "extends": "base",
+      "ios": {},
+      "android": {
+        "track": "internal"
+      }
+    },
+    "staging": {
+      "extends": "base",
+      "ios": {
+        "ascAppId": "6736408645",
+        "sku": "gs-staging"
+      },
+      "android": {
+        "track": "internal",
+        "releaseStatus": "draft"
+      }
+    },
+    "production": {
+      "extends": "base",
+      "ios": {
+        "ascAppId": "6738331179"
+      },
+      "android": {
+        "track": "production"
+      }
+    }
+  }
+}

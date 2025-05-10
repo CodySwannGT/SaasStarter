@@ -1,0 +1,12 @@
+diff --git a/node_modules/@gluestack-ui/popover/src/PopoverContent.tsx b/node_modules/@gluestack-ui/popover/src/PopoverContent.tsx
+index 8385cac..a794eb4 100644
+--- a/node_modules/@gluestack-ui/popover/src/PopoverContent.tsx
++++ b/node_modules/@gluestack-ui/popover/src/PopoverContent.tsx
+@@ -213,6 +213,7 @@ const PopoverContent = (StyledPopoverContent: any, AnimatePresence?: any) =>
+               ...overlayProps?.style,
+             }}
+             ref={overlayRef}
++            collapsable={false}
+           >
+             {arrowElement}
+             <FocusScopeComponent contain={trapFocus} restoreFocus autoFocus>

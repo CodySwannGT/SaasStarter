@@ -1,0 +1,21 @@
+{
+  "name": "@saas-starter/prettier-config",
+  "version": "0.1.0",
+  "description": "Shared Prettier configurations for the SaaS Starter Kit",
+  "license": "MIT",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "base.json",
+    "react.json",
+    "node.json",
+    "next.json"
+  ],
+  "scripts": {
+    "format": "prettier --write \"**/*.{js,json,md}\""
+  },
+  "dependencies": {
+    "prettier": "^3.2.5",
+    "prettier-plugin-tailwindcss": "^0.6.5"
+  }
+}

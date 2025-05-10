@@ -1,0 +1,16 @@
+{
+  "name": "@saas-starter/tsconfig",
+  "version": "0.1.0",
+  "description": "Shared TypeScript configurations for the SaaS Starter Kit",
+  "license": "MIT",
+  "files": [
+    "base.json",
+    "react.json",
+    "react-native.json",
+    "node.json",
+    "next.json"
+  ],
+  "dependencies": {
+    "typescript": "^5.4.5"
+  }
+}

@@ -1,0 +1,10 @@
+build
+node_modules
+graphql
+generated
+.github
+public
+cypress
+.dead
+dist
+.serverless

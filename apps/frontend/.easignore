@@ -1,0 +1,48 @@
+node_modules/
+.expo/
+dist/
+npm-debug.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+.vercel/*
+
+# macOS
+.DS_Store
+.eslintcache
+
+### EASINCLUDE! ###
+### BELOW THIS LINE WILL NOT BE IGNORED BY EAS ###
+aws-exports.js
+# aws-exports.js This should be ignored but is needed for eas update
+
+.env*.local
+.env
+
+### Cypress
+coverage
+.nyc_output
+
+westack-414800-632447f63133.json
+*.aab
+*.ipa
+*.apk
+.env.secrets
+
+android
+ios
+# Ignoring large assets not needed for build
+public/images/
+
+# Additional ignores specific to EAS builds
+
+# Ignore native folders (if you are using EAS Build)
+/android
+/ios
+
+# Ignore test coverage reports
+/coverage

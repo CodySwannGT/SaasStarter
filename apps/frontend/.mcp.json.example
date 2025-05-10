@@ -1,0 +1,81 @@
+{
+  "mcpServers": {
+    "jira": {
+      "command": "uvx",
+      "args": [
+        "mcp-atlassian",
+        "--jira-url=https://geminisportsanalytics.atlassian.net",
+        "--jira-username=xxxxxxxx",
+        "--jira-token=xxxxxxxx"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest"
+      ],
+      "alwaysAllow": [
+        "browser_snapshot",
+        "browser_click",
+        "browser_take_screenshot",
+        "browser_type",
+        "browser_close",
+        "browser_navigate"
+      ]
+    },
+    "fetch": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-fetch"
+      ],
+      "alwaysAllow": [
+        "fetch"
+      ]
+    },
+    "brave-search": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-brave-search"
+      ],
+      "env": {
+        "BRAVE_API_KEY": "xxxxxxxx"
+      },
+      "alwaysAllow": [
+        "brave_web_search"
+      ]
+    },
+    "browser": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@agentdeskai/browser-tools-mcp@1.2.0"
+      ],
+      "alwaysAllow": [
+        "getConsoleLogs",
+        "getConsoleErrors",
+        "getNetworkErrors",
+        "getNetworkLogs",
+        "takeScreenshot",
+        "getSelectedElement",
+        "wipeLogs",
+        "runAccessibilityAudit",
+        "runPerformanceAudit"
+      ]
+    },
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "xxxxxxxx"
+      },
+      "alwaysAllow": [
+        "search_issues",
+        "search_code"
+      ]
+    }
+  }
+}

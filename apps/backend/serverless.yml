@@ -1,0 +1,203 @@
+service: backend
+frameworkVersion: "^4.0.0"
+
+custom:
+  serviceName: ${self:service}
+  prune:
+    number: 4
+  exportPrefix: "${self:custom.serviceName}-${sls:stage}-"
+  export-env:
+    filename: .env.local
+    overwrite: false
+    enableOffline: true
+    
+  warmup:
+    default:
+      prewarm: true
+      events:
+        - schedule: rate(3 minutes)
+
+  scriptable:
+    hooks:
+      before:package:createDeploymentArtifacts: mv .warmup/default/index.mjs .warmup/default/index.js
+  databaseName:
+    Fn::ImportValue: auroraDatabaseName
+  databaseHostname:
+    Fn::ImportValue: auroraClusterHostname
+  databaseProxyEndpoint:
+    Fn::ImportValue: auroraProxyEndpoint
+  databasePort:
+    Fn::ImportValue: auroraClusterPort
+  databaseUser:
+    Fn::ImportValue: auroraUser
+  databaseProxyEndpointReadOnly:
+    Fn::ImportValue: auroraProxyEndpointReadOnly
+  databaseSecretName:
+    Fn::ImportValue: auroraClusterSecretName
+  cognitoClientId:
+    Fn::ImportValue: CognitoClientId
+  cognitoUserPoolArn:
+    Fn::ImportValue: UserPoolArn
+  cognitoUserPoolId:
+    Fn::ImportValue: UserPoolId
+  cognitoUserPoolName:
+    Fn::ImportValue: UserPoolName 
+  snsTopicNameImport: 
+    Fn::ImportValue: SmsSnsTopicName
+  
+
+plugins:
+  - serverless-plugin-warmup
+  - serverless-plugin-common-excludes
+  - serverless-offline
+  - serverless-prune-plugin
+  - serverless-export-env
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  profile: "TODO-${sls:stage}-v2"
+  tracing:
+    lambda: true
+    apiGateway: true
+  httpApi:
+    cors: true
+  environment:
+    OPENAI_API_KEY: ${env:OPENAI_API_KEY, ssm:/openai/api_key, param:OPENAI_API_KEY, ""}
+    DATABASE_HOST: ${env:DATABASE_HOST, self:custom.databaseHostname, param:DATABASE_HOST, ""}
+    DATABASE_PROXY_HOST: ${env:DATABASE_PROXY_HOST, self:custom.databaseProxyEndpoint, param:DATABASE_PROXY_HOST, ""}
+    DATABASE_PROXY_HOST_READ_1: ${env:DATABASE_PROXY_HOST_READ_1, self:custom.databaseProxyEndpointReadOnly, param:DATABASE_PROXY_HOST_READ_1, ""}
+    DATABASE_PORT: ${env:DATABASE_PORT, self:custom.databasePort, param:DATABASE_PORT, ""}
+    DATABASE_USERNAME: ${env:DATABASE_USERNAME, self:custom.databaseUser, param:DATABASE_USERNAME, ""}
+    DATABASE_USERNAME_READ_1: ${env:DATABASE_USERNAME_READ_1, self:custom.databaseUser, param:DATABASE_USERNAME_READ_1, ""}
+    DATABASE_PASSWORD: ${env:DATABASE_PASSWORD, self:custom.databasePassword, param:DATABASE_PASSWORD, ""}
+    DATABASE_NAME: ${env:DATABASE_NAME, self:custom.databaseName, param:DATABASE_NAME, ""}
+    COGNITO_USER_POOL_ID:
+      Fn::ImportValue: UserPoolId
+    COGNITO_APP_CLIENT_ID:
+      Fn::ImportValue: CognitoClientId
+    STAGE: ${sls:stage}
+    REDIS_PORT:
+      Fn::ImportValue: redisCachePort
+    REDIS_HOST:
+    APIG_ENDPOINT:
+      Fn::Join:
+        - ""
+        - - https://
+          - Ref: WebsocketsApi
+          - .execute-api.
+          - Ref: AWS::Region
+          - .amazonaws.com/
+          - ${sls:stage}
+          
+  vpc:
+    securityGroupIds: !Split [",", !ImportValue lambdaSecurityGroupIds]
+    subnetIds: !Split [",", !ImportValue vpcPrivateSubnets]
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - appconfigdata:StartConfigurationSession
+            - appconfigdata:GetLatestConfiguration
+            - appconfig:GetLatestConfiguration
+            - appconfig:StartConfigurationSession
+          Resource:
+            - "*"
+        - Effect: "Allow" # xray permissions (required)
+          Action:
+            - "xray:PutTraceSegments"
+            - "xray:PutTelemetryRecords"
+          Resource:
+            - "*"
+        - Effect: Allow
+          Action: "secretsmanager:GetSecretValue"
+          Resource: "*"
+        - Effect: Allow
+          Action: "rds-db:connect"
+          Resource: "*"
+        - Effect: Allow
+          Action:
+            - sqs:sendmessage
+            - sqs:receivemessage
+            - sqs:deletemessage
+            - sqs:getqueueurl
+            - sqs:changeMessageVisibility
+            - sqs:getQueueAttributes
+          Resource: "*"
+        - Effect: Allow
+          Action:
+            - "s3:GetObject"
+            - "s3:ListBucket"
+            - "s3:PutObject"
+            - "s3:DeleteObject"
+          Resource: "*"
+        - Effect: Allow
+          Action:
+            - ses:SendEmail
+          Resource: "*"
+        - Effect: Allow
+          Action:
+            - execute-api:*
+          Resource: "*"
+        - Effect: Allow
+          Action:
+            - sns:publish
+            - sns:subscribe
+            - sns:unsubscribe
+          Resource: "*"
+        - Effect: Allow
+          Action:
+            - sms-voice:*
+          Resource: "*"
+        - Effect: Allow
+          Action:
+            - sts:AssumeRole
+          Resource: "*"
+        - Effect: Allow
+          Action:
+            - cognito-idp:AdminAddUserToGroup
+            - cognito-idp:AdminCreateUser
+            - cognito-idp:AdminDisableUserCommand
+            - cognito-idp:AdminDeleteUser
+            - cognito-idp:AdminDisableUser
+            - cognito-idp:AdminEnableUser
+            - cognito-idp:AdminGetUser
+            - cognito-idp:AdminInitiateAuth
+            - cognito-idp:AdminListGroupsForUser
+            - cognito-idp:AdminRemoveUserFromGroup
+            - cognito-idp:AdminResetUserPassword
+            - cognito-idp:AdminSetUserPassword
+            - cognito-idp:AdminUpdateUserAttributes
+            - cognito-idp:ChangePassword
+            - cognito-idp:ConfirmForgotPassword
+            - cognito-idp:GlobalSignOut
+            - cognito-idp:ListUsers
+            - cognito-idp:ListUserPools
+            - cognito-idp:ListUsersInGroup
+            - cognito-idp:RespondToAuthChallenge
+            - cognito-idp:RevokeToken
+            - cognito-idp:UpdateUserAttributes
+          Resource: "*"
+
+package:
+  patterns:
+    - "src/**"
+
+functions:
+  fmain:
+    handler: src/main-serverless.handler
+    url: true
+
+  main:
+    provisionedConcurrency: 1
+    handler: src/main-serverless.handler
+    timeout: 29
+    events:
+      - httpApi:
+          method: any
+          path: /{proxy+}
+
+  
+  

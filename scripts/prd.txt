@@ -1,0 +1,134 @@
+# Product Requirements Document: Frontend Monorepo Conversion
+
+## Overview
+This document outlines the requirements for converting the existing `frontend-v2` directory into a modern, modular monorepo structure as part of the SaaS Starter Kit. The goal is to create a clean, well-structured foundation that follows best practices and is easy to extend and customize.
+
+## Goals
+- Convert the current `frontend-v2` directory into a monorepo structure with separate apps and packages
+- Remove all sports-specific and brand-specific code and references
+- Create a "Hello World" baseline application that demonstrates the core architecture
+- Modernize dependencies to their latest stable versions
+- Improve developer experience by implementing proper tooling and structure
+
+## Non-Goals
+- Implementing full feature parity with the existing sports-specific application
+- Creating complex business logic specific to any particular domain
+- Integrating with specific third-party services beyond the core authentication and infrastructure
+
+## Requirements
+
+### 1. Directory Structure Conversion
+- Convert `frontend-v2` to a monorepo structure following Turbo/Bun best practices
+- Create the following structure:
+  - `apps/frontend` - Main React Native/Expo application
+  - `packages/ui` - Shared UI components
+  - `packages/config` - Shared configuration utilities
+  - `packages/auth` - Authentication utilities
+  - `packages/types` - Shared TypeScript definitions
+
+### 2. De-branding and Templating
+- Remove all references to "Gemini", "GSA", "GeminiSports", and any other brand-specific language
+- Replace with template variables that are substituted during project creation:
+  - `{{COMPANY_NAME}}` - The company name
+  - `{{DOMAIN_NAME}}` - The primary domain name
+  - `{{SUPPORT_EMAIL}}` - Support email address
+  - `{{GITHUB_ORG}}` - GitHub organization name
+  - `{{DATABASE_PREFIX}}` - Database prefix for tables
+- Update all configuration files, constants, and UI components to use these variables
+
+### 3. Component Streamlining
+- Retain only the essential, generic UI components from the current codebase
+- Remove all sports-specific components and functionality including:
+  - Player data management
+  - Team management
+  - Scouting and recruitment
+  - Sports analytics
+  - Sport-specific UI components
+- Create a clean, basic component library following the Container/View pattern
+
+### 4. Core Feature Retention
+Retain only these core SaaS features:
+- User authentication (registration, login, password reset)
+- Organization management (create, join, update)
+- User invitation system
+- Basic user profile management
+- Role-based access control
+
+### 5. Dependency Updates
+- Update all dependencies to their latest stable versions, including:
+  - Expo SDK
+  - React and React Native
+  - Apollo Client
+  - UI framework (GlueStack UI)
+  - Navigation (Expo Router)
+- Replace Yup validation library with Zod
+- Ensure compatibility across web, iOS, and Android platforms
+
+### 6. Quality Assurance
+- Implement comprehensive linting and formatting:
+  - ESLint for code quality
+  - Prettier for consistent formatting
+  - TypeScript strict mode for type safety
+- Set up pre-commit hooks using Husky
+- Configure Expo Doctor for environment validation
+- Ensure all types are properly defined and exported
+
+### 7. Monorepo Tooling
+- Configure Turbo for build and development workflow optimization
+- Set up Bun as the primary package manager
+- Create shared workspace configuration
+- Implement cross-package dependency management
+- Set up proper module resolution and path aliases
+
+### 8. Documentation
+- Update all documentation to reflect the new structure
+- Create clear developer guides for extending the starter kit
+- Document the templating system and customization options
+- Include usage examples for common patterns
+
+### 9. Start-up Application
+- Create a minimal "Hello World" application that demonstrates:
+  - Proper routing architecture
+  - Authentication flow
+  - Theming system
+  - Component structure
+  - API connection setup
+- Remove any complex or domain-specific implementations
+- Ensure the application starts up properly on all platforms
+
+### 10. Testing
+- Implement basic tests for core components
+- Set up testing framework for future extensions
+- Ensure existing test patterns and utilities are preserved if useful
+
+## Technical Constraints
+- Must support web, iOS, and Android platforms
+- Must follow the Container/View pattern for components
+- Must use Expo managed workflow
+- Must support all accessibility features
+- Must integrate with AWS Cognito for authentication
+- Must support dark mode and light mode
+- Must follow mobile-first design principles
+
+## Success Criteria
+- Clean build on all platforms (web, iOS, Android)
+- Pass all linting and type checking
+- Successful run of Expo Doctor
+- Functional authentication flow
+- Clear, documented API for customization
+- No references to original branding or sports-specific functionality
+- Proper module separation and dependency management
+- Easy to understand and extend for new developers
+
+## Timeline
+- Analysis and planning: 1 week
+- Initial structure setup: 1 week
+- Core functionality migration: 2 weeks
+- De-branding and templating: 1 week
+- Dependency updates and testing: 1 week
+- Documentation and final polish: 1 week
+
+## Stakeholders
+- Development team
+- Future SaaS application builders using this starter kit
+- Open source contributors

@@ -1,0 +1,32 @@
+{
+  "name": "create-saas-starter",
+  "version": "1.0.0",
+  "description": "CLI tool to scaffold a new SaaS project",
+  "type": "module",
+  "bin": {
+    "create-saas-starter": "./create-saas-starter.js"
+  },
+  "scripts": {
+    "start": "node create-saas-starter.js"
+  },
+  "keywords": [
+    "saas",
+    "starter",
+    "react-native",
+    "expo",
+    "nestjs",
+    "aws",
+    "revenucat",
+    "turborepo"
+  ],
+  "author": "Your Organization",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "inquirer": "^9.2.10",
+    "ora": "^7.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

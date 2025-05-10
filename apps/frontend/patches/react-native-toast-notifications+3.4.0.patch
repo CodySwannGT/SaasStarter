@@ -1,0 +1,645 @@
+diff --git a/node_modules/react-native-toast-notifications/lib/typescript/toast-container.d.ts b/node_modules/react-native-toast-notifications/lib/typescript/toast-container.d.ts
+index 0b942aa..fc4bb53 100644
+--- a/node_modules/react-native-toast-notifications/lib/typescript/toast-container.d.ts
++++ b/node_modules/react-native-toast-notifications/lib/typescript/toast-container.d.ts
+@@ -8,6 +8,7 @@ export interface Props extends ToastOptions {
+     offset?: number;
+     offsetTop?: number;
+     offsetBottom?: number;
++    offsetRight?: number;
+     swipeEnabled?: boolean;
+ }
+ interface State {
+diff --git a/node_modules/react-native-toast-notifications/lib/typescript/toast.d.ts b/node_modules/react-native-toast-notifications/lib/typescript/toast.d.ts
+index 2639305..aa6df32 100644
+--- a/node_modules/react-native-toast-notifications/lib/typescript/toast.d.ts
++++ b/node_modules/react-native-toast-notifications/lib/typescript/toast.d.ts
+@@ -1,5 +1,5 @@
+ import { FC } from "react";
+-import { StyleProp, ViewStyle, TextStyle } from "react-native";
++import { StyleProp, TextStyle, ViewStyle } from "react-native";
+ export interface ToastOptions {
+     /**
+      * Id is optional, you may provide an id only if you want to update toast later using toast.update()
+@@ -9,6 +9,10 @@ export interface ToastOptions {
+      * Customize toast icon
+      */
+     icon?: JSX.Element;
++    /**
++    * Customize toast icon close
++    */
++    iconClose?: JSX.Element;
+     /**
+      * Toast types, You can implement your custom types with JSX using renderType method on ToastContainer.
+      */
+@@ -20,11 +24,15 @@ export interface ToastOptions {
+     /**
+      * Customize when toast should be placed
+      */
+-    placement?: "top" | "bottom" | "center";
++    placement?: "top" | "bottom" | "center" | "top right";
+     /**
+      * Customize style of toast
+      */
+     style?: StyleProp<ViewStyle>;
++    /**
++     * Customize style of toast title
++     */
++    titleStyle?: StyleProp<TextStyle>;
+     /**
+      * Customize style of toast text
+      */
+@@ -78,10 +86,12 @@ export interface ToastOptions {
+      */
+     data?: any;
+     swipeEnabled?: boolean;
++    swipeDirection?: 'row' | 'column'
+ }
+ export interface ToastProps extends ToastOptions {
+     id: string;
+     onDestroy(): void;
++    title?: string | JSX.Element;
+     message: string | JSX.Element;
+     open: boolean;
+     renderToast?(toast: ToastProps): JSX.Element;
+diff --git a/node_modules/react-native-toast-notifications/src/toast-container.tsx b/node_modules/react-native-toast-notifications/src/toast-container.tsx
+index 5d2a8b4..56ee826 100644
+--- a/node_modules/react-native-toast-notifications/src/toast-container.tsx
++++ b/node_modules/react-native-toast-notifications/src/toast-container.tsx
+@@ -1,14 +1,15 @@
+-import React, { Component } from "react";
++import React, { Component } from 'react';
+ import {
+-  StyleSheet,
+-  ViewStyle,
++  Dimensions,
+   KeyboardAvoidingView,
+   Platform,
+-  Dimensions, SafeAreaView,
+-} from "react-native";
+-import Toast, { ToastOptions, ToastProps } from "./toast";
++  SafeAreaView,
++  StyleSheet,
++  ViewStyle,
++} from 'react-native';
++import Toast, { ToastOptions, ToastProps } from './toast';
+ 
+-const { height, width } = Dimensions.get("window");
++const { height, width } = Dimensions.get('window');
+ 
+ export interface Props extends ToastOptions {
+   renderToast?(toast: ToastProps): JSX.Element;
+@@ -16,6 +17,7 @@ export interface Props extends ToastOptions {
+   offset?: number;
+   offsetTop?: number;
+   offsetBottom?: number;
++  offsetRight?: number;
+   swipeEnabled?: boolean;
+ }
+ 
+@@ -32,8 +34,9 @@ class ToastContainer extends Component<Props, State> {
+   }
+ 
+   static defaultProps: Props = {
+-    placement: "bottom",
++    placement: 'bottom',
+     offset: 10,
++    offsetRight: 10,
+     swipeEnabled: true,
+   };
+ 
+@@ -107,7 +110,7 @@ class ToastContainer extends Component<Props, State> {
+    */
+   isOpen = (id: string) => {
+     return this.state.toasts.some((t) => t.id === id && t.open);
+-  }
++  };
+ 
+   renderBottomToasts() {
+     const { toasts } = this.state;
+@@ -115,18 +118,48 @@ class ToastContainer extends Component<Props, State> {
+     let style: ViewStyle = {
+       bottom: offsetBottom || offset,
+       width: width,
+-      justifyContent: "flex-end",
+-      flexDirection: "column",
++      justifyContent: 'flex-end',
++      flexDirection: 'column',
+     };
+     return (
+       <KeyboardAvoidingView
+-        behavior={Platform.OS === "ios" ? "position" : undefined}
++        behavior={Platform.OS === 'ios' ? 'position' : undefined}
+         style={[styles.container, style]}
+-        pointerEvents="box-none"
++        pointerEvents='box-none'
+       >
+         <SafeAreaView>
+           {toasts
+-            .filter((t) => !t.placement || t.placement === "bottom")
++            .filter((t) => !t.placement || t.placement === 'bottom')
++            .map((toast) => (
++              <Toast key={toast.id} {...toast} />
++            ))}
++        </SafeAreaView>
++      </KeyboardAvoidingView>
++    );
++  }
++
++  renderTopRightToasts() {
++    const { toasts } = this.state;
++    let { offset, offsetTop, offsetRight } = this.props;
++    let style: ViewStyle = {
++      top: offsetTop || offset,
++      right: offset || 0,
++      width: width,
++      justifyContent: 'flex-start',
++      flexDirection: 'column-reverse',
++    };
++    let contentStyle: ViewStyle = {
++      alignSelf: 'flex-end',
++    };
++    return (
++      <KeyboardAvoidingView
++        behavior={Platform.OS === 'ios' ? 'position' : undefined}
++        style={[styles.container, style]}
++        pointerEvents='box-none'
++      >
++        <SafeAreaView style={contentStyle}>
++          {toasts
++            .filter((t) => t.placement === 'top right')
+             .map((toast) => (
+               <Toast key={toast.id} {...toast} />
+             ))}
+@@ -141,18 +174,18 @@ class ToastContainer extends Component<Props, State> {
+     let style: ViewStyle = {
+       top: offsetTop || offset,
+       width: width,
+-      justifyContent: "flex-start",
+-      flexDirection: "column-reverse",
++      justifyContent: 'flex-start',
++      flexDirection: 'column-reverse',
+     };
+     return (
+       <KeyboardAvoidingView
+-        behavior={Platform.OS === "ios" ? "position" : undefined}
++        behavior={Platform.OS === 'ios' ? 'position' : undefined}
+         style={[styles.container, style]}
+-        pointerEvents="box-none"
++        pointerEvents='box-none'
+       >
+         <SafeAreaView>
+           {toasts
+-            .filter((t) => t.placement === "top")
++            .filter((t) => t.placement === 'top')
+             .map((toast) => (
+               <Toast key={toast.id} {...toast} />
+             ))}
+@@ -168,23 +201,23 @@ class ToastContainer extends Component<Props, State> {
+       top: offsetTop || offset,
+       height: height,
+       width: width,
+-      justifyContent: "center",
+-      flexDirection: "column-reverse",
++      justifyContent: 'center',
++      flexDirection: 'column-reverse',
+     };
+ 
+-    const data = toasts.filter((t) => t.placement === "center");
++    const data = toasts.filter((t) => t.placement === 'center');
+     const foundToast = data.length > 0;
+ 
+     if (!foundToast) return null;
+ 
+     return (
+       <KeyboardAvoidingView
+-        behavior={Platform.OS === "ios" ? "position" : undefined}
++        behavior={Platform.OS === 'ios' ? 'position' : undefined}
+         style={[styles.container, style]}
+-        pointerEvents="box-none"
++        pointerEvents='box-none'
+       >
+         {toasts
+-          .filter((t) => t.placement === "center")
++          .filter((t) => t.placement === 'center')
+           .map((toast) => (
+             <Toast key={toast.id} {...toast} />
+           ))}
+@@ -195,6 +228,7 @@ class ToastContainer extends Component<Props, State> {
+   render() {
+     return (
+       <>
++        {this.renderTopRightToasts()}
+         {this.renderTopToasts()}
+         {this.renderBottomToasts()}
+         {this.renderCenterToasts()}
+@@ -207,15 +241,17 @@ const styles = StyleSheet.create({
+   container: {
+     flex: 0,
+     // @ts-ignore: fixed is available on web.
+-    position: Platform.OS === "web" ? "fixed" : "absolute",
+-    maxWidth: "100%",
++    position: Platform.OS === 'web' ? 'fixed' : 'absolute',
++    maxWidth: '100%',
+     zIndex: 999999,
+     elevation: 999999,
+     alignSelf: 'center',
+-    ...(Platform.OS === "web" ? { overflow: "hidden", userSelect: 'none' } : null),
++    ...(Platform.OS === 'web'
++      ? { overflow: 'hidden', userSelect: 'none' }
++      : null),
+   },
+   message: {
+-    color: "#333",
++    color: '#333',
+   },
+ });
+ 
+diff --git a/node_modules/react-native-toast-notifications/src/toast.tsx b/node_modules/react-native-toast-notifications/src/toast.tsx
+index bbabca6..59d7c4c 100644
+--- a/node_modules/react-native-toast-notifications/src/toast.tsx
++++ b/node_modules/react-native-toast-notifications/src/toast.tsx
+@@ -1,19 +1,19 @@
+-import React, { FC, useRef, useEffect, useState } from "react";
++import React, { FC, useEffect, useRef, useState } from 'react';
+ import {
+-  View,
+-  StyleSheet,
+   Animated,
+-  StyleProp,
+-  ViewStyle,
+-  TextStyle,
+-  Text,
+-  TouchableWithoutFeedback,
+   PanResponder,
+-  PanResponderInstance,
+   PanResponderGestureState,
++  PanResponderInstance,
+   Platform,
+-} from "react-native";
+-import { useDimensions } from "./utils/useDimensions";
++  Pressable,
++  StyleProp,
++  StyleSheet,
++  Text,
++  TextStyle,
++  View,
++  ViewStyle,
++} from 'react-native';
++import { useDimensions } from './utils/useDimensions';
+ 
+ export interface ToastOptions {
+   /**
+@@ -26,10 +26,15 @@ export interface ToastOptions {
+    */
+   icon?: JSX.Element;
+ 
++  /**
++   * Customize toast icon close
++   */
++  iconClose?: JSX.Element;
++
+   /**
+    * Toast types, You can implement your custom types with JSX using renderType method on ToastContainer.
+    */
+-  type?: "normal" | "success" | "danger" | "warning" | string;
++  type?: 'normal' | 'success' | 'danger' | 'warning' | string;
+ 
+   /**
+    * In ms, How long toast will stay before it go away
+@@ -39,13 +44,19 @@ export interface ToastOptions {
+   /**
+    * Customize when toast should be placed
+    */
+-  placement?: "top" | "bottom" | "center";
++  placement?: 'top' | 'bottom' | 'center' | 'top right';
+ 
+   /**
+    * Customize style of toast
+    */
+   style?: StyleProp<ViewStyle>;
+ 
++  
++  /**
++   * Customize style of toast title
++   */
++  titleStyle?: StyleProp<TextStyle>;
++
+   /**
+    * Customize style of toast text
+    */
+@@ -59,7 +70,7 @@ export interface ToastOptions {
+   /**
+    * Customize how toast is animated when added or removed
+    */
+-  animationType?: "slide-in" | "zoom-in";
++  animationType?: 'slide-in' | 'zoom-in';
+ 
+   /**
+    * Customize success type icon
+@@ -112,11 +123,14 @@ export interface ToastOptions {
+   data?: any;
+ 
+   swipeEnabled?: boolean;
++
++  swipeDirection?: 'row' | 'column'
+ }
+ 
+ export interface ToastProps extends ToastOptions {
+   id: string;
+   onDestroy(): void;
++  title?: string;
+   message: string | JSX.Element;
+   open: boolean;
+   renderToast?(toast: ToastProps): JSX.Element;
+@@ -129,13 +143,16 @@ const Toast: FC<ToastProps> = (props) => {
+     id,
+     onDestroy,
+     icon,
+-    type = "normal",
++    iconClose,
++    type = 'normal',
++    title,
+     message,
+     duration = 5000,
+     style,
++    titleStyle,
+     textStyle,
+     animationDuration = 250,
+-    animationType = "slide-in",
++    animationType = 'slide-in',
+     successIcon,
+     dangerIcon,
+     warningIcon,
+@@ -145,6 +162,7 @@ const Toast: FC<ToastProps> = (props) => {
+     normalColor,
+     placement,
+     swipeEnabled,
++    swipeDirection = 'column',
+     onPress,
+   } = props;
+ 
+@@ -158,10 +176,10 @@ const Toast: FC<ToastProps> = (props) => {
+   useEffect(() => {
+     Animated.timing(animation, {
+       toValue: 1,
+-      useNativeDriver: Platform.OS !== "web",
++      useNativeDriver: Platform.OS !== 'web',
+       duration: animationDuration,
+     }).start();
+-    if (duration !== 0 && typeof duration === "number") {
++    if (duration !== 0 && typeof duration === 'number') {
+       closeTimeoutRef.current = setTimeout(() => {
+         handleClose();
+       }, duration);
+@@ -186,15 +204,23 @@ const Toast: FC<ToastProps> = (props) => {
+   const handleClose = () => {
+     Animated.timing(animation, {
+       toValue: 0,
+-      useNativeDriver: Platform.OS !== "web",
++      useNativeDriver: Platform.OS !== 'web',
+       duration: animationDuration,
+     }).start(() => onDestroy());
+   };
+ 
++  const panReleaseToTop = (gestureState: PanResponderGestureState) => {
++    Animated.timing(getPanResponderAnim(), {
++      toValue: { x: 0, y: gestureState.vy < 0 ? gestureState.dy : 0 },
++      useNativeDriver: Platform.OS !== 'web',
++      duration: 0,
++    }).start(() => onDestroy());
++  };
++
+   const panReleaseToLeft = (gestureState: PanResponderGestureState) => {
+     Animated.timing(getPanResponderAnim(), {
+       toValue: { x: (-dims.width / 10) * 9, y: gestureState.dy },
+-      useNativeDriver: Platform.OS !== "web",
++      useNativeDriver: Platform.OS !== 'web',
+       duration: 250,
+     }).start(() => onDestroy());
+   };
+@@ -202,14 +228,14 @@ const Toast: FC<ToastProps> = (props) => {
+   const panReleaseToRight = (gestureState: PanResponderGestureState) => {
+     Animated.timing(getPanResponderAnim(), {
+       toValue: { x: (dims.width / 10) * 9, y: gestureState.dy },
+-      useNativeDriver: Platform.OS !== "web",
++      useNativeDriver: Platform.OS !== 'web',
+       duration: 250,
+     }).start(() => onDestroy());
+   };
+ 
+   const getPanResponder = () => {
+     if (panResponderRef.current) return panResponderRef.current;
+-    const swipeThreshold = Platform.OS === "android" ? 10 : 0;
++    const swipeThreshold = Platform.OS === 'android' ? 10 : 0;
+     panResponderRef.current = PanResponder.create({
+       onMoveShouldSetPanResponder: (_, gestureState) => {
+         //return true if user is swiping, return false if it's a single click
+@@ -220,20 +246,31 @@ const Toast: FC<ToastProps> = (props) => {
+       },
+       onPanResponderMove: (_, gestureState) => {
+         getPanResponderAnim()?.setValue({
+-          x: gestureState.dx,
+-          y: gestureState.dy,
++          x: swipeDirection === 'column' ? 0 : gestureState.dx,
++          y: swipeDirection === 'column' ? gestureState.vy < 0 ? gestureState.dy : 0 : gestureState.dy,
+         });
+       },
+       onPanResponderRelease: (_, gestureState) => {
+-        if (gestureState.dx > 50) {
+-          panReleaseToRight(gestureState);
+-        } else if (gestureState.dx < -50) {
+-          panReleaseToLeft(gestureState);
++        if (swipeDirection === 'column') {
++          if (gestureState.dy < 0) {
++            panReleaseToTop(gestureState)
++          } else {
++            Animated.spring(getPanResponderAnim(), {
++              toValue: { x: 0, y: 0 },
++              useNativeDriver: Platform.OS !== 'web',
++            }).start();
++          }
+         } else {
+-          Animated.spring(getPanResponderAnim(), {
+-            toValue: { x: 0, y: 0 },
+-            useNativeDriver: Platform.OS !== "web",
+-          }).start();
++          if (gestureState.dx > 50) {
++            panReleaseToRight(gestureState);
++          } else if (gestureState.dx < -50) {
++            panReleaseToLeft(gestureState);
++          } else {
++            Animated.spring(getPanResponderAnim(), {
++              toValue: { x: 0, y: 0 },
++              useNativeDriver: Platform.OS !== 'web',
++            }).start();
++          }
+         }
+       },
+     });
+@@ -248,20 +285,20 @@ const Toast: FC<ToastProps> = (props) => {
+ 
+   if (icon === undefined) {
+     switch (type) {
+-      case "success": {
++      case 'success': {
+         if (successIcon) {
+           icon = successIcon;
+         }
+         break;
+       }
+ 
+-      case "danger": {
++      case 'danger': {
+         if (dangerIcon) {
+           icon = dangerIcon;
+         }
+         break;
+       }
+-      case "warning": {
++      case 'warning': {
+         if (warningIcon) {
+           icon = warningIcon;
+         }
+@@ -270,19 +307,19 @@ const Toast: FC<ToastProps> = (props) => {
+     }
+   }
+ 
+-  let backgroundColor = "";
++  let backgroundColor = '';
+   switch (type) {
+-    case "success":
+-      backgroundColor = successColor || "rgb(46, 125, 50)";
++    case 'success':
++      backgroundColor = successColor || 'rgb(46, 125, 50)';
+       break;
+-    case "danger":
+-      backgroundColor = dangerColor || "rgb(211, 47, 47)";
++    case 'danger':
++      backgroundColor = dangerColor || 'rgb(211, 47, 47)';
+       break;
+-    case "warning":
+-      backgroundColor = warningColor || "rgb(237, 108, 2)";
++    case 'warning':
++      backgroundColor = warningColor || 'rgb(237, 108, 2)';
+       break;
+     default:
+-      backgroundColor = normalColor || "#333";
++      backgroundColor = normalColor || '#333';
+   }
+ 
+   const animationStyle: Animated.WithAnimatedObject<ViewStyle> = {
+@@ -291,7 +328,7 @@ const Toast: FC<ToastProps> = (props) => {
+       {
+         translateY: animation.interpolate({
+           inputRange: [0, 1],
+-          outputRange: placement === "bottom" ? [20, 0] : [-20, 0], // 0 : 150, 0.5 : 75, 1 : 0
++          outputRange: placement === 'bottom' ? [20, 0] : placement === 'top' ? [0, -20] : [-20, 0], // 0 : 150, 0.5 : 75, 1 : 0
+         }),
+       },
+     ],
+@@ -299,11 +336,11 @@ const Toast: FC<ToastProps> = (props) => {
+ 
+   if (swipeEnabled) {
+     animationStyle.transform?.push(
+-      getPanResponderAnim().getTranslateTransform()[0]
++      getPanResponderAnim().getTranslateTransform()[1]
+     );
+   }
+ 
+-  if (animationType === "zoom-in") {
++  if (animationType === 'zoom-in') {
+     animationStyle.transform?.push({
+       scale: animation.interpolate({
+         inputRange: [0, 1],
+@@ -314,7 +351,7 @@ const Toast: FC<ToastProps> = (props) => {
+ 
+   return (
+     <Animated.View
+-      pointerEvents={"box-none"}
++      pointerEvents={'box-none'}
+       ref={containerRef}
+       {...(swipeEnabled ? getPanResponder().panHandlers : null)}
+       style={[styles.container, animationStyle]}
+@@ -324,10 +361,7 @@ const Toast: FC<ToastProps> = (props) => {
+       ) : props.renderToast ? (
+         props.renderToast(props)
+       ) : (
+-        <TouchableWithoutFeedback
+-          disabled={!onPress}
+-          onPress={() => onPress && onPress(id)}
+-        >
++        <Pressable disabled={!onPress} onPress={() => onPress && onPress(id)}>
+           <View
+             style={[
+               styles.toastContainer,
+@@ -335,37 +369,56 @@ const Toast: FC<ToastProps> = (props) => {
+               style,
+             ]}
+           >
+-            {icon ? <View style={styles.iconContainer}>{icon}</View> : null}
+-            {React.isValidElement(message) ? (
+-              message
+-            ) : (
+-              <Text style={[styles.message, textStyle]}>{message}</Text>
+-            )}
++            <View style={styles.contentContainer}>
++              {!!title ? <Text style={[styles.title, titleStyle]}>{title}</Text> : null}
++              {icon ? <View style={styles.iconContainer}>{icon}</View> : null}
++              {React.isValidElement(message) ? (
++                message
++              ) : (
++                <Text style={[styles.message, textStyle]}>{message}</Text>
++              )}
++            </View>
++            <Pressable style={styles.iconCloseContainer} onPress={onDestroy} >
++              {iconClose && iconClose}
++            </Pressable>
+           </View>
+-        </TouchableWithoutFeedback>
++        </Pressable>
+       )}
+     </Animated.View>
+   );
+ };
+ 
+ const styles = StyleSheet.create({
+-  container: { width: "100%", alignItems: "center" },
++  container: { width: '100%', alignItems: 'center' },
+   toastContainer: {
+     paddingHorizontal: 12,
+     paddingVertical: 12,
+     borderRadius: 5,
+     marginVertical: 5,
+-    flexDirection: "row",
+-    alignItems: "center",
+-    overflow: "hidden",
++    flexDirection: 'row',
++    alignItems: 'center',
++    overflow: 'hidden',
++  },
++  contentContainer: {
++    flex: 1,
++    flexDirection: 'column',
++    justifyContent: 'center',
++  }, 
++  title: {
++    color: '#fff',
++    fontWeight: 'bold',
+   },
+   message: {
+-    color: "#fff",
+-    fontWeight: "500",
++    color: '#fff',
++    fontWeight: '500',
+   },
+   iconContainer: {
+     marginRight: 5,
+   },
++  iconCloseContainer: {
++    width: 24,
++    height: 24,
++  }
+ });
+ 
+ export default Toast;

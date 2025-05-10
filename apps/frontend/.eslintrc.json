@@ -1,0 +1,187 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true
+  },
+  "extends": [
+    "universe/node",
+    "universe/web",
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended",
+    "plugin:prettier/recommended",
+    "plugin:jsx-a11y/strict",
+    "plugin:functional/recommended",
+    "plugin:functional/stylistic",
+    "plugin:tailwindcss/recommended",
+    "plugin:sonarjs/recommended",
+    "plugin:eslint-comments/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "plugins": [
+    "react",
+    "jsx-a11y",
+    "@typescript-eslint",
+    "functional",
+    "sonarjs",
+    "react-perf",
+    "eslint-comments",
+    "folders"
+  ],
+  "rules": {
+    "tailwindcss/classnames-order": [
+      "error",
+      {
+        "callees": ["tva", "classnames", "clsx", "ctl", "cva", "tv"]
+      }
+    ],
+    "import/no-cycle": "error",
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": ["@/features/*/*"]
+      }
+    ],
+    "max-lines": [
+      "warn",
+      {
+        "max": 250,
+        "skipBlankLines": true,
+        "skipComments": true
+      }
+    ],
+    "folders/match-regex": [
+      "error",
+      "^([a-z][a-z0-9]*)(-[a-z0-9]+)*$",
+      "/src/"
+    ],
+    "sonarjs/cognitive-complexity": ["warn", 15],
+    "sonarjs/no-identical-functions": "warn",
+    "sonarjs/no-duplicate-string": "warn",
+    "sonarjs/no-nested-template-literals": "warn",
+    "sonarjs/prefer-immediate-return": "warn",
+    "sonarjs/prefer-single-boolean-return": "warn",
+    "sonarjs/no-collapsible-if": "warn",
+    "react-perf/jsx-no-new-object-as-prop": "warn",
+    "react-perf/jsx-no-new-array-as-prop": "warn",
+    "react-perf/jsx-no-new-function-as-prop": "warn",
+    "eslint-comments/require-description": "warn",
+    "eslint-comments/disable-enable-pair": "warn",
+    "eslint-comments/no-unlimited-disable": "warn",
+    "@typescript-eslint/naming-convention": [
+      "warn",
+      {
+        "selector": "function",
+        "format": ["camelCase", "PascalCase"]
+      },
+      {
+        "selector": "variable",
+        "format": ["camelCase", "PascalCase", "UPPER_CASE"]
+      },
+      {
+        "selector": "parameter",
+        "format": ["camelCase"],
+        "leadingUnderscore": "allow"
+      },
+      {
+        "selector": "method",
+        "format": ["camelCase"],
+        "filter": {
+          "regex": "^handle[A-Z]",
+          "match": true
+        }
+      }
+    ],
+    "react/jsx-no-constructed-context-values": "error",
+    "no-extra-boolean-cast": "off",
+    "react/jsx-uses-react": "off",
+    "react/react-in-jsx-scope": "off",
+    "react-hooks/exhaustive-deps": "error",
+    "react-hooks/rules-of-hooks": "error",
+    "prefer-const": "error",
+    "no-param-reassign": "error",
+    "no-var": "error",
+    "brace-style": "error",
+    "prefer-template": "error",
+    "radix": "error",
+    "space-before-blocks": "error",
+    "import/prefer-default-export": "off",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }
+    ],
+    "functional/no-mixed-types": "off",
+    "functional/functional-parameters": "off",
+    "functional/prefer-immutable-types": "off",
+    "functional/no-expression-statements": "off",
+    "functional/no-conditional-statements": "off",
+    "functional/prefer-property-signatures": "off",
+    "functional/no-return-void": "off",
+    "functional/immutable-data": [
+      "error",
+      {
+        "ignoreImmediateMutation": true,
+        "ignorePattern": ["router"],
+        // Ignore all reassigning to object properties that are prefixed with "module.exports".
+        // Ignore all shallow mutations made to object properties that are suffixed with ".current" (React ref).
+        "ignoreAccessorPattern": [
+          "module.exports*",
+          "*.current",
+          "*.displayName",
+          "*Animated.value",
+          "mutable*.*"
+        ]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["hooks/shared/**/*", "components/shared/**/*"],
+      "rules": {
+        // Disable the no-restricted-imports rule for these files
+        "no-restricted-imports": "off"
+      }
+    },
+    {
+      "files": ["**/*View.tsx", "**/*View.jsx"],
+      "rules": {
+        // Stricter rules for View components
+        "sonarjs/cognitive-complexity": ["warn", 10],
+        "max-lines": [
+          "error",
+          {
+            "max": 250,
+            "skipBlankLines": true,
+            "skipComments": true
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "**/*.test.js",
+        "**/*.test.jsx",
+        "**/*.test.tsx",
+        "**/*.spec.js",
+        "**/*.spec.jsx",
+        "**/*.spec.tsx"
+      ],
+      "env": {
+        "jest": true
+      }
+    }
+  ]
+}

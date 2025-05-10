@@ -1,0 +1,57 @@
+{
+  "name": "{{COMPANY_NAME}}-saas-starter",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "infrastructure"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:web": "turbo run dev:web",
+    "dev:backend": "turbo run dev:backend",
+    "build": "turbo run build",
+    "build:web": "turbo run build:web",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "format": "turbo run format",
+    "format:check": "turbo run format:check",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:watch": "turbo run test:watch",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "setup": "bun run scripts/saas-cli.ts setup",
+    "create": "bun run scripts/saas-cli.ts create",
+    "branding": "bun run scripts/saas-cli.ts branding",
+    "saas": "bun run scripts/saas-cli.ts",
+    "deploy:dev": "turbo run deploy:dev",
+    "deploy:staging": "turbo run deploy:staging",
+    "deploy:prod": "turbo run deploy:prod",
+    "cdk": "turbo run cdk --filter=infrastructure",
+    "synth": "turbo run cdk synth --filter=infrastructure",
+    "deploy": "turbo run cdk deploy --filter=infrastructure"
+  },
+  "devDependencies": {
+    "@saas-starter/eslint-config": "*",
+    "@saas-starter/prettier-config": "*",
+    "@saas-starter/tsconfig": "*",
+    "@typescript-eslint/eslint-plugin": "^8.32.0",
+    "@typescript-eslint/parser": "^8.32.0",
+    "chalk": "^5.4.1",
+    "commander": "^13.1.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^10.1.3",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "ora": "^8.2.0",
+    "prettier": "^3.2.5",
+    "prettier-plugin-tailwindcss": "^0.6.5",
+    "turbo": "^2.5.3",
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "bun": ">=1.0.29"
+  },
+  "packageManager": "bun@1.0.29"
+}
